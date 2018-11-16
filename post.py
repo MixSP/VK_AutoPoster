@@ -1,6 +1,8 @@
 import datetime
 import os
 
+import vk_api
+
 
 class ImportContentError(Exception): pass
 
@@ -36,7 +38,14 @@ class Post():
                     self.__photos.append(file_)
         else:
             raise ImportContentError('Folder "{}" is empty'.format(self.__path.split('\\')[-1]))
-
+    
+    def upload_photos(self, vk_session, user_id, group_id):
+        if self.__photos:
+            upload = vk_api.VkUpload(vk_session)
+            photos_path = [self.__path + '\\' + photo for photo in self.__photos]
+            photos = upload.photo_wall(photos_path, user_id, group_id)
+            atcmts = ['photo' + str(photo['owner_id']) + '_' + str(photo['id']) for photo in photos]
+            return ','.join(atcmts)
 
 def get_time(folder):
         try:
