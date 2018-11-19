@@ -12,6 +12,7 @@ class Post():
         self.time = time
         self.__path = path
         self.__photos = []
+        self.__attachments = ''
 
     @property
     def time(self):
@@ -34,7 +35,7 @@ class Post():
         files = os.listdir(self.__path)
         if files:
             for file_ in files:
-                if file_.endswith('.jpg') or file_.endswith('.png'):
+                if file_.endswith('.jpg') or file_.endswith('.png') or file_.endswith('.jpeg'):
                     self.__photos.append(file_)
         else:
             raise ImportContentError('Folder "{}" is empty'.format(self.__path.split('\\')[-1]))
@@ -45,7 +46,17 @@ class Post():
             photos_path = [self.__path + '\\' + photo for photo in self.__photos]
             photos = upload.photo_wall(photos_path, user_id, group_id)
             atcmts = ['photo' + str(photo['owner_id']) + '_' + str(photo['id']) for photo in photos]
-            return ','.join(atcmts)
+            self.__attachments = ','.join(atcmts)
+
+    def post(self, vk_session, owner_id):
+        vk = vk_session.get_api()
+        response = vk.wall.post(owner_id=owner_id,
+                                from_group=1,
+                                attachments=self.__attachments)        
+        return response        
+
+
+
 
 def get_time(folder):
         try:
