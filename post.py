@@ -13,6 +13,8 @@ class Post():
         self.__path = path
         self.__photos = []
         self.__docs = []
+        self.__message = ''
+        self.__message_file = None
         self.__attachments = ''
 
 
@@ -40,6 +42,8 @@ class Post():
                     self.__photos.append(file_)
                 elif file_.endswith('.gif'):
                     self.__docs.append(file_)
+                elif file_.endswith('.txt') and self.__message_file is None:
+                    self.__message_file = file_
         else:
             raise ImportContentError('Folder "{}" is empty'.format(self.__path.split('\\')[-1]))
     
@@ -61,12 +65,17 @@ class Post():
                 atcmt = 'doc' + str(dct[0]['owner_id']) + '_' + str(dct[0]['id'])
                 self.__attachments = ','.join( (self.__attachments, atcmt) )
 
+        if self.__message_file:
+            with open(self.__path + '\\' + self.__message_file, 'rb') as f:
+                for line in f:
+                    self.__message += line.decode('utf-8')
             
 
     def post(self, vk_session, owner_id):
         vk = vk_session.get_api()
         response = vk.wall.post(owner_id=owner_id,
                                 from_group=1,
+                                message=self.__message,
                                 attachments=self.__attachments)        
         return response        
 
