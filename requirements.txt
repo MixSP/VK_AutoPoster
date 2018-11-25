@@ -1,0 +1,8 @@
+certifi==2018.10.15
+chardet==3.0.4
+enum34==1.1.6
+idna==2.7
+requests==2.20.1
+six==1.11.0
+urllib3==1.24.1
+vk-api==11.2.1

@@ -33,6 +33,14 @@ class Post():
         return len(self.__photos) + len(self.__docs)
 
 
+    def __eq__(self, other):
+        return self.__time == other.__time
+    
+
+    def __lt__(self, other):
+        return self.__time < other.__time
+
+
     def import_content(self):
         files = os.listdir(self.__path)
 
@@ -45,28 +53,28 @@ class Post():
                 elif file_.endswith('.txt') and self.__message_file is None:
                     self.__message_file = file_
         else:
-            raise ImportContentError('Folder "{}" is empty'.format(self.__path.split('\\')[-1]))
+            raise ImportContentError('Folder "{}" is empty'.format(self.__path.split('/')[-1]))
     
 
     def upload_content(self, vk_session, user_id, group_id):
         upload = vk_api.VkUpload(vk_session)
 
         if self.__photos:
-            photos_path = [self.__path + '\\' + photo for photo in self.__photos]
+            photos_path = [self.__path + '/' + photo for photo in self.__photos]
             photos = upload.photo_wall(photos_path, user_id, group_id)
-            atcmts = ['photo' + str(photo['owner_id']) + '_' + str(photo['id']) for photo in photos]
-            atcmts = ','.join(atcmts)
-            self.__attachments = ','.join( (self.__attachments, atcmts) )
+            atcms = ['photo' + str(photo['owner_id']) + '_' + str(photo['id']) for photo in photos]
+            atcms = ','.join(atcms)
+            self.__attachments = ','.join( (self.__attachments, atcms) )
 
         if self.__docs:
             for doc in self.__docs:
-                path = self.__path + '\\' + doc
+                path = self.__path + '/' + doc
                 dct = upload.document_wall(path, doc[:-4])
                 atcmt = 'doc' + str(dct[0]['owner_id']) + '_' + str(dct[0]['id'])
                 self.__attachments = ','.join( (self.__attachments, atcmt) )
 
         if self.__message_file:
-            with open(self.__path + '\\' + self.__message_file, 'rb') as f:
+            with open(self.__path + '/' + self.__message_file, 'rb') as f:
                 for line in f:
                     self.__message += line.decode('utf-8')
             
@@ -98,6 +106,6 @@ def make_posts(posts_path):
             post.import_content()
             print( 'post in {} - {} objects'.format(post.time, len(post)) )
             posts.append(post)
-        except ImportContentError as err:
-            print('post in {} - error ({})'.format(post.time, err))
+        except Exception as err:
+            print('Error ({})'.format(err))
     return posts
