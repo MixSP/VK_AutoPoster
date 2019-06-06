@@ -33,6 +33,3 @@ pip install -r requirements.txt
 ```
 python main.py
 ```
-
-### Вопросы, предложения, пожелания
-Telegram: [@luminoxOMB](https://t.me/luminoxOMB)
