@@ -1,6 +1,7 @@
 import datetime
 from time import sleep
 import os
+import sys
 
 import vk_api
 
@@ -13,7 +14,7 @@ def make_time():
 
 
 def two_factor():
-    code = input('Enter Two-factor Auth code: ')
+    code = input('Enter 2FA code: ')
     remember_device = True
     return code, remember_device
 
@@ -26,35 +27,42 @@ def main():
                               config_filename='vk_config.v2.json')
     vk_session.auth()
 
-    posts_path = os.getcwd() + '/posts/'
-    print('Posts:')
+    posts_path = os.path.join(os.path.dirname(os.path.realpath(sys.argv[0])), 'posts')
+    print('Posts: ')
     posts = make_posts(posts_path)
     print('=' * 40)
 
-    for post in posts:              
+    for post in posts:
         td = ( post.time - datetime.datetime.now() ).total_seconds()
         if td < 0:
             print(post.time, '- wrong post time')
             print('-' * 40)
             continue
+
         else:
             while True:
                 td = ( post.time - datetime.datetime.now() ).total_seconds()
                 if td < 60:
                     try:
-                        print('[{}] Uploading files to server vk...'.format(make_time()))
-                        post.upload_content(vk_session, USER_ID, GROUP_ID)
-                        
-                        print('[{}] Posting...'.format(make_time()))
-                        post.post(vk_session, GROUP_ID)
-                        
-                        print('[{}] Success!'.format(make_time()))
+                        for GROUP_ID in GROUP_IDS:
+                            print('[{}] Uploading files as attachments...'.format(make_time()))
+                            post.upload_content(vk_session, USER_ID, GROUP_ID)
+
+                            print('[{}] Posting to {}...'.format(make_time(), GROUP_ID))
+                            post.post(vk_session, GROUP_ID)
+
+                            print('[{}] Success!'.format(make_time()))
+                            sleep(0.34)
+
                     except Exception as err:
                         print('[{}] {} - Error {}'.format(make_time(), post.time, err))
+
                     break
+
                 else:
-                    print('[{}] sleep {} min'.format(make_time(), round((td - 40)/60, 1)))
+                    print('[{}] sleep {} min'.format(make_time(), round((td - 40) / 60, 1)))
                     sleep(td - 40)
+
         print('-' * 40)
 
 
